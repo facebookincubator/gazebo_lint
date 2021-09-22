@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "gazebo_lint",
+    # Uncomment to manually test linter_test
+    # "linter_test",
+]
