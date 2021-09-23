@@ -24,7 +24,7 @@ jobs:
       with:
         toolchain: ${{ matrix.toolchain }}
         override: true
-        components: clippy, rustfmt
+        components: clippy, rustfmt, rust-src, rustc-dev, llvm-tools-preview
     - run: cargo fmt -- --check
     - run: cargo clippy ${{ matrix.flags }}
     - run: cargo build ${{ matrix.flags }}
