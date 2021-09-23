@@ -12,17 +12,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        toolchain: [nightly, stable]
-        flags: ['', --all-features]
-        exclude:
-        - toolchain: stable
-          flags: --all-features
 
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ matrix.toolchain }}
+        toolchain: nightly-2021-07-22
         override: true
         components: clippy, rustfmt, rust-src, rustc-dev, llvm-tools-preview
     - run: cargo fmt -- --check
