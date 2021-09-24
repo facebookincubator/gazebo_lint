@@ -1,0 +1,25 @@
+name: ci
+on:
+  push:
+  pull_request:
+  schedule:
+  - cron: '0 12 * * 1' # 12pm Monday
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly-2021-07-22
+        override: true
+        components: clippy, rustfmt, rust-src, rustc-dev, llvm-tools-preview
+    - run: cargo fmt -- --check
+    - run: cargo clippy ${{ matrix.flags }}
+    - run: cargo build ${{ matrix.flags }}

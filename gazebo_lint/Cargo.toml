@@ -1,0 +1,10 @@
+[package]
+name = "gazebo_lint"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+plugin = true
+
+[dependencies]
+smallvec = "1.4"

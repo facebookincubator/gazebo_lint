@@ -1,0 +1,9 @@
+[package]
+name = "linter_test"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+gazebo = { path = "../../gazebo/gazebo" }
+gazebo_lint = { path = "../gazebo_lint" }
+anyhow = "1.0.32"
