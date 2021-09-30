@@ -16,6 +16,7 @@ Gazebo lint can lint any program by adding the following to `lib.rs`:
 ```
 
 Unfortunately the `plugin` feature is deprecated, so while useful, it is likely that `linter` will stop working at some point in the future.
+We will look to update the linter to use the proper alternatives if applicable when that becomes an issue.
 
 ## Making a release
 1. Check the [GitHub Actions](https://github.com/facebookincubator/gazebo_lint/actions) are green.
