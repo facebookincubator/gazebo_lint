@@ -1,5 +1,10 @@
 # Gazebo Lint - a linter for patterns relating to the Gazebo Library
 
+[![GitHub link](https://img.shields.io/badge/GitHub-facebookincubator%2Fgazebo_lint-blue.svg)](https://github.com/facebookincubator/gazebo_lint)
+[![crates.io version](https://img.shields.io/crates/v/gazebo_lint.svg)](https://crates.io/crates/gazebo_lint)
+[![Build status](https://img.shields.io/github/workflow/status/facebookincubator/gazebo_lint/ci.svg)](https://github.com/facebookincubator/gazebo_lint/actions)
+
+
 The linter provides various helpful hints relating to additions from the [Gazebo Library](https://github.com/facebookincubator/gazebo).
 
 For example, `Gazebo` added [`Dupe`](https://docs.rs/gazebo/0.4.0/src/gazebo/dupe.rs.html). This linter will provide hints to use `dupe` instead of `clone`. e.g. when doing `Arc::new(x).clone()`.
@@ -20,8 +25,8 @@ We will look to update the linter to use the proper alternatives if applicable w
 
 ## Making a release
 1. Check the [GitHub Actions](https://github.com/facebookincubator/gazebo_lint/actions) are green.
-2. Update `CHANGELOG.md` with the changes since the last release. [This link](https://github.com/facebookincubator/gazebo_lint/compare/v0.1.0...main) can help (update to compare against the last release).
-3. Update the version numbers of the two `Cargo.toml` files. Bump them by 0.0.1 if there are no incompatible changes, or 0.1.0 if there are.
+2. Update `CHANGELOG.md` with the changes since the last release. [This link](https://github.com/facebookincubator/gazebo_lint/compare/v0.1.1...main) can help (update to compare against the last release).
+3. Update the version numbers of the `Cargo.toml` file in `gazebo_lint`. Bump them by 0.0.1 if there are no incompatible changes, or 0.1.0 if there are.
 4. Run `cargo publish --dry-run --allow-dirty`, then without the `--dry-run` in `gazebo_lint` directory.
 5. Create a [GitHub release](https://github.com/facebookincubator/gazebo_lint/releases/new) with `v0.X.Y`, using the `gazebo_lint` version as the name.
 
