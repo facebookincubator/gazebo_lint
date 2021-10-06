@@ -10,6 +10,8 @@
 // Utilities copied from Clippy on 15 May 2020 with minimal modification
 // https://github.com/rust-lang/rust-clippy/blob/master/clippy_lints/src/utils/mod.rs
 
+use std::mem;
+
 use rustc_hir::{
     self, def,
     def::{DefKind, Res},
@@ -28,7 +30,6 @@ use rustc_trait_selection::traits::{
 };
 use rustc_typeck::hir_ty_to_ty;
 use smallvec::SmallVec;
-use std::mem;
 
 macro_rules! sym {
     ($tt:tt) => {
