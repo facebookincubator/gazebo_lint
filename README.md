@@ -27,7 +27,7 @@ We will look to update the linter to use the proper alternatives if applicable w
 1. Check the [GitHub Actions](https://github.com/facebookincubator/gazebo_lint/actions) are green.
 2. Update `CHANGELOG.md` with the changes since the last release. [This link](https://github.com/facebookincubator/gazebo_lint/compare/v0.1.1...main) can help (update to compare against the last release).
 3. Update the version numbers of the `Cargo.toml` file in `gazebo_lint`. Bump them by 0.0.1 if there are no incompatible changes, or 0.1.0 if there are.
-4. Run `cargo publish --dry-run --allow-dirty`, then without the `--dry-run` in `gazebo_lint` directory.
+4. Run `cargo publish --allow-dirty --dry-run`, then without the `--dry-run` in `gazebo_lint` directory.
 5. Create a [GitHub release](https://github.com/facebookincubator/gazebo_lint/releases/new) with `v0.X.Y`, using the `gazebo_lint` version as the name.
 
 
