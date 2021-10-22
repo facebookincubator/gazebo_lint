@@ -29,7 +29,6 @@
 #![feature(rustc_private)]
 #![feature(never_type)]
 #![feature(box_syntax)]
-// #![cfg_attr(fbcode_build, feature(plugin_registrar))]
 
 // The rustc pieces we rely on.
 extern crate rustc_driver;
@@ -607,14 +606,6 @@ impl<'tcx> LateLintPass<'tcx> for Pass {
     }
 }
 
-// #[cfg(fbcode_build)]
-// #[allow(deprecated)]
-// #[plugin_registrar]
-// pub fn plugin_registrar(reg: &mut Registry) {
-//     register_plugin(reg);
-// }
-
-#[cfg(not(fbcode_build))]
 #[no_mangle]
 fn __rustc_plugin_registrar(reg: &mut Registry) {
     register_plugin(reg);
