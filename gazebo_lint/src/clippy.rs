@@ -72,8 +72,14 @@ pub fn method_calls<'tcx>(
     (current, method_names, arg_lists, spans)
 }
 
+#[cfg(fbcode_build)]
+type PathToRes = Option<def::Res>;
+
+#[cfg(not(fbcode_build))]
+type PathToRes = Option<def::Res<!>>;
+
 /// Gets the definition associated to a path.
-pub fn path_to_res(cx: &LateContext, path: &[&str]) -> Option<def::Res> {
+pub fn path_to_res(cx: &LateContext, path: &[&str]) -> PathToRes {
     let crates = cx.tcx.crates(());
     let krate = crates
         .iter()
@@ -212,4 +218,12 @@ pub fn match_ty_path(
     }
 
     false
+}
+
+#[cfg(not(fbcode_build))]
+pub fn unpack_non_local<T>(res: def::Res<T>) -> Option<def::Res<!>> {
+    match res {
+        def::Res::Local(_) => None,
+        x => Some(x.expect_non_local()),
+    }
 }

@@ -26,9 +26,10 @@
 //! * More compiler plugins: <https://doc.rust-lang.org/unstable-book/language-features/plugin.html>
 //! * The source of Clippy: <https://github.com/rust-lang/rust-clippy>
 
-#![feature(plugin_registrar)]
 #![feature(rustc_private)]
+#![feature(never_type)]
 #![feature(box_syntax)]
+// #![cfg_attr(fbcode_build, feature(plugin_registrar))]
 
 // The rustc pieces we rely on.
 extern crate rustc_driver;
@@ -59,6 +60,9 @@ use rustc_hir::{
 use rustc_lint::{LateContext, LateLintPass, Lint, LintContext, LintId};
 use rustc_middle::ty::TyKind;
 use rustc_span::{Span, Symbol};
+
+#[cfg(not(fbcode_build))]
+use crate::clippy::unpack_non_local;
 
 // We'd really like to do declare_tool_lint, but Rust has a check that
 // the "tool" must be exactly rustc or clippy, so we can't.
@@ -428,58 +432,134 @@ fn check_impl_dupe(cx: &LateContext, item: &Item) {
     }
 }
 
-/// Look for `anyhow::bail!` or `anyhow::ensure!`, both of which get expanded to `crate::private::Err`.
-fn check_use_bail_and_ensure(cx: &LateContext, expr: &Expr) {
-    // it's hard to check pre-expanded macros as we have no information on what the tokens actually
-    // refer to. i.e. we can detect `anyhow::bail` and `bail` (with `use anyhow::`) only as pure
-    // ast tokens. We cannot properly resolve them to make sure those are actually the anyhow
-    // macros of interest.
-    // Luckily, anyhow macros all expand to using `anyhow::private::Err`, so we can use the post
-    // macro expansion and detect for that.
-    if let ExprKind::Call(call, _) = expr.kind {
-        if let ExprKind::Path(QPath::Resolved(_, path)) = &call.kind {
-            if path.segments.len() == 3 {
-                // the path here should be `anyhow::private::Err` if its a macro.
-                // check for a length of 3.
-                if clippy::path_to_res(cx, &["anyhow", "private", "Err"])
-                    == clippy::path_to_res(cx, &["core", "result", "Result", "Err"])
-                    && path.segments[1].res == clippy::path_to_res(cx, &["anyhow", "private"])
-                    && path.segments[2].ident.as_str() == "Err"
-                {
-                    emit_lint(cx, ANYHOW_AVOID_BAIL_AND_ENSURE, expr.span);
+#[cfg(fbcode_build)]
+mod rust_1_56 {
+    use super::*;
+
+    /// Look for `anyhow::bail!` or `anyhow::ensure!`, both of which get expanded to `crate::private::Err`.
+    pub fn check_use_bail_and_ensure(cx: &LateContext, expr: &Expr) {
+        // it's hard to check pre-expanded macros as we have no information on what the tokens actually
+        // refer to. i.e. we can detect `anyhow::bail` and `bail` (with `use anyhow::`) only as pure
+        // ast tokens. We cannot properly resolve them to make sure those are actually the anyhow
+        // macros of interest.
+        // Luckily, anyhow macros all expand to using `anyhow::private::Err`, so we can use the post
+        // macro expansion and detect for that.
+        if let ExprKind::Call(call, _) = expr.kind {
+            if let ExprKind::Path(QPath::Resolved(_, path)) = &call.kind {
+                if path.segments.len() == 3 {
+                    // the path here should be `anyhow::private::Err` if its a macro.
+                    // check for a length of 3.
+                    if clippy::path_to_res(cx, &["anyhow", "private", "Err"])
+                        == clippy::path_to_res(cx, &["core", "result", "Result", "Err"])
+                        && path.segments[1].res == clippy::path_to_res(cx, &["anyhow", "private"])
+                        && path.segments[2].ident.as_str() == "Err"
+                    {
+                        emit_lint(cx, ANYHOW_AVOID_BAIL_AND_ENSURE, expr.span);
+                    }
                 }
+            }
+        }
+    }
+
+    /// Look for use `anyhow::Result` or use `anyhow::Error`.
+    pub fn check_qualify_anyhow(cx: &LateContext, item: &Item) {
+        if let ItemKind::Use(path, kind) = &item.kind {
+            match kind {
+                UseKind::Glob => {
+                    if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow"]) {
+                        if anyhow_path == path.res {
+                            emit_lint(cx, ANYHOW_QUALIFY, item.span)
+                        }
+                    }
+                }
+                UseKind::Single => {
+                    if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Result"]) {
+                        if anyhow_path == path.res {
+                            emit_lint(cx, ANYHOW_QUALIFY, item.span)
+                        }
+                    }
+                    if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Error"]) {
+                        if anyhow_path == path.res {
+                            emit_lint(cx, ANYHOW_QUALIFY, item.span)
+                        }
+                    }
+                }
+                _ => {}
+            };
+        }
+    }
+}
+
+#[cfg(fbcode_build)]
+use rust_1_56::*;
+
+#[cfg(not(fbcode_build))]
+mod rust_1_58 {
+    use super::*;
+
+    /// Look for `anyhow::bail!` or `anyhow::ensure!`, both of which get expanded to `crate::private::Err`.
+    pub fn check_use_bail_and_ensure(cx: &LateContext, expr: &Expr) {
+        // it's hard to check pre-expanded macros as we have no information on what the tokens actually
+        // refer to. i.e. we can detect `anyhow::bail` and `bail` (with `use anyhow::`) only as pure
+        // ast tokens. We cannot properly resolve them to make sure those are actually the anyhow
+        // macros of interest.
+        // Luckily, anyhow macros all expand to using `anyhow::private::Err`, so we can use the post
+        // macro expansion and detect for that.
+        if let ExprKind::Call(call, _) = expr.kind {
+            if let ExprKind::Path(QPath::Resolved(_, path)) = &call.kind {
+                if path.segments.len() == 3 {
+                    // the path here should be `anyhow::private::Err` if its a macro.
+                    // check for a length of 3.
+                    if clippy::path_to_res(cx, &["anyhow", "private", "Err"])
+                        == clippy::path_to_res(cx, &["core", "result", "Result", "Err"])
+                    {
+                        if let Some(res) = path.segments[1].res.and_then(unpack_non_local) {
+                            if clippy::path_to_res(cx, &["anyhow", "private"])
+                                .map_or(false, |x| x == res)
+                                && path.segments[2].ident.as_str() == "Err"
+                            {
+                                emit_lint(cx, ANYHOW_AVOID_BAIL_AND_ENSURE, expr.span);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Look for use `anyhow::Result` or use `anyhow::Error`.
+    pub fn check_qualify_anyhow(cx: &LateContext, item: &Item) {
+        if let ItemKind::Use(path, kind) = &item.kind {
+            if let Some(res) = unpack_non_local(path.res) {
+                match kind {
+                    UseKind::Glob => {
+                        if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow"]) {
+                            if anyhow_path == res {
+                                emit_lint(cx, ANYHOW_QUALIFY, item.span)
+                            }
+                        }
+                    }
+                    UseKind::Single => {
+                        if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Result"]) {
+                            if anyhow_path == res {
+                                emit_lint(cx, ANYHOW_QUALIFY, item.span)
+                            }
+                        }
+                        if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Error"]) {
+                            if anyhow_path == res {
+                                emit_lint(cx, ANYHOW_QUALIFY, item.span)
+                            }
+                        }
+                    }
+                    _ => {}
+                };
             }
         }
     }
 }
 
-/// Look for use `anyhow::Result` or use `anyhow::Error`.
-fn check_qualify_anyhow(cx: &LateContext, item: &Item) {
-    if let ItemKind::Use(path, kind) = &item.kind {
-        match kind {
-            UseKind::Glob => {
-                if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow"]) {
-                    if anyhow_path == path.res {
-                        emit_lint(cx, ANYHOW_QUALIFY, item.span)
-                    }
-                }
-            }
-            UseKind::Single => {
-                if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Result"]) {
-                    if anyhow_path == path.res {
-                        emit_lint(cx, ANYHOW_QUALIFY, item.span)
-                    }
-                }
-                if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Error"]) {
-                    if anyhow_path == path.res {
-                        emit_lint(cx, ANYHOW_QUALIFY, item.span)
-                    }
-                }
-            }
-            _ => {}
-        };
-    }
-}
+#[cfg(not(fbcode_build))]
+use rust_1_58::*;
 
 /// Look for `anyhow::Result<_, _>`.
 fn check_anyhow_two_arguments(cx: &LateContext, ty: &Ty) {
@@ -527,9 +607,20 @@ impl<'tcx> LateLintPass<'tcx> for Pass {
     }
 }
 
-#[allow(deprecated)]
-#[plugin_registrar]
-pub fn plugin_registrar(reg: &mut Registry) {
+// #[cfg(fbcode_build)]
+// #[allow(deprecated)]
+// #[plugin_registrar]
+// pub fn plugin_registrar(reg: &mut Registry) {
+//     register_plugin(reg);
+// }
+
+#[cfg(not(fbcode_build))]
+#[no_mangle]
+fn __rustc_plugin_registrar(reg: &mut Registry) {
+    register_plugin(reg);
+}
+
+fn register_plugin(reg: &mut Registry) {
     let lints = [
         GAZEBO_USE_MAP,
         GAZEBO_USE_TRY_MAP,
