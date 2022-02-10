@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 gazebo = { path = "../../gazebo/gazebo" }
 gazebo_lint = { path = "../gazebo_lint" }
-anyhow = "1.0.32"
+anyhow = "1.0.51"
