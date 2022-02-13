@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "gazebo_lint",
     # Uncomment to manually test linter_test
