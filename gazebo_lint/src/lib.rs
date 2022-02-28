@@ -66,93 +66,97 @@ use crate::clippy::unpack_non_local;
 // the "tool" must be exactly rustc or clippy, so we can't.
 
 declare_lint!(
-    GAZEBO_USE_MAP,
+    GAZEBO_LINT_USE_MAP,
     Warn,
     "The iter/collect can be replaced with `map`, with `use gazebo::prelude::*`"
 );
 
 declare_lint!(
-    GAZEBO_USE_TRY_MAP,
+    GAZEBO_LINT_USE_TRY_MAP,
     Warn,
     "The iter/map/collect can be replaced with `try_map`, with `use gazebo::prelude::*`"
 );
 
 declare_lint!(
-    GAZEBO_USE_INTO_MAP,
+    GAZEBO_LINT_USE_INTO_MAP,
     Warn,
     "The into_iter/map/collect can be replaced with `into_map`, with `use gazebo::prelude::*`"
 );
 
 declare_lint!(
-    GAZEBO_USE_INTO_TRY_MAP,
+    GAZEBO_LINT_USE_INTO_TRY_MAP,
     Warn,
     "The into_iter/map/collect can be replaced with `into_try_map`, with `use gazebo::prelude::*`"
 );
 
 declare_lint!(
-    GAZEBO_USE_SLICE_CLONED,
+    GAZEBO_LINT_USE_SLICE_CLONED,
     Warn,
     "The iter/cloned/collect can be replaced with `cloned`, with `use gazebo::prelude::*`"
 );
 
 declare_lint!(
-    GAZEBO_USE_SLICE_DUPED,
+    GAZEBO_LINT_USE_SLICE_DUPED,
     Warn,
     "The iter/duped/collect can be replaced with `duped`, with `use gazebo::prelude::*`"
 );
 
-declare_lint!(GAZEBO_USE_DUPE, Warn, "Use `dupe()`");
+declare_lint!(GAZEBO_LINT_USE_DUPE, Warn, "Use `dupe()`");
 
-declare_lint!(GAZEBO_USE_DUPED, Warn, "Use `duped()`");
+declare_lint!(GAZEBO_LINT_USE_DUPED, Warn, "Use `duped()`");
 
 declare_lint!(
-    GAZEBO_DUPE_ON_COPY,
+    GAZEBO_LINT_DUPE_ON_COPY,
     Warn,
     "using `dupe` on a `Copy` type. Try removing the call `dupe()`."
 );
 
 declare_lint!(
-    ANYHOW_AVOID_BAIL_AND_ENSURE,
+    GAZEBO_LINT_ANYHOW_AVOID_BAIL_AND_ENSURE,
     Warn,
     "Do not use `anyhow::bail!` and `anyhow::ensure!`. Prefer explicit `return` of Error types"
 );
 
-declare_lint!(USE_BOX, Warn, "Use `box` syntax instead of `Box::new`");
+declare_lint!(
+    GAZEBO_LINT_USE_BOX,
+    Warn,
+    "Use `box` syntax instead of `Box::new`"
+);
 
 declare_lint!(
-    GAZEBO_IMPL_DUPE,
+    GAZEBO_LINT_IMPL_DUPE,
     Warn,
     "impl `Dupe` on types that impl `Clone` where possible, e.g. `struct Foo(SomethingDupe)`"
 );
 
 declare_lint!(
-    ANYHOW_QUALIFY,
+    GAZEBO_LINT_ANYHOW_QUALIFY,
     Warn,
     "avoid importing `anyhow::Result` and `anyhow::Error`. Reference `anyhow` Error and Result \
     types by the qualified `anyhow::Result` and `anyhow::Error` types directly."
 );
 
 declare_lint!(
-    ANYHOW_RESULT_TWO_ARGUMENTS,
+    GAZEBO_LINT_ANYHOW_RESULT_TWO_ARGUMENTS,
     Warn,
     "use `Result` when there are two type arguments, instead of `anyhow::Result`."
 );
 
 declare_lint_pass!(
     Pass => [
-        GAZEBO_USE_MAP,
-        GAZEBO_USE_TRY_MAP,
-        GAZEBO_USE_INTO_MAP,
-        GAZEBO_USE_INTO_TRY_MAP,
-        GAZEBO_USE_SLICE_CLONED,
-        GAZEBO_USE_SLICE_DUPED,
-        ANYHOW_AVOID_BAIL_AND_ENSURE,
-        USE_BOX,
-        GAZEBO_USE_DUPE,
-        GAZEBO_IMPL_DUPE,
-        ANYHOW_QUALIFY,
-        GAZEBO_DUPE_ON_COPY,
-        ANYHOW_RESULT_TWO_ARGUMENTS,
+        GAZEBO_LINT_USE_MAP,
+        GAZEBO_LINT_USE_TRY_MAP,
+        GAZEBO_LINT_USE_INTO_MAP,
+        GAZEBO_LINT_USE_INTO_TRY_MAP,
+        GAZEBO_LINT_USE_SLICE_CLONED,
+        GAZEBO_LINT_USE_SLICE_DUPED,
+        GAZEBO_LINT_ANYHOW_AVOID_BAIL_AND_ENSURE,
+        GAZEBO_LINT_USE_BOX,
+        GAZEBO_LINT_USE_DUPE,
+        GAZEBO_LINT_IMPL_DUPE,
+        GAZEBO_LINT_ANYHOW_QUALIFY,
+        GAZEBO_LINT_DUPE_ON_COPY,
+        GAZEBO_LINT_ANYHOW_RESULT_TWO_ARGUMENTS,
     ]
 );
 
@@ -173,7 +177,7 @@ fn check_use_map(cx: &LateContext, expr: &Expr) {
         )
         && cx.typeck_results().expr_ty_adjusted(root).is_slice()
     {
-        emit_lint(cx, GAZEBO_USE_MAP, expr.span);
+        emit_lint(cx, GAZEBO_LINT_USE_MAP, expr.span);
     }
 }
 
@@ -191,7 +195,7 @@ fn check_use_try_map(cx: &LateContext, expr: &Expr) {
             &[&["alloc", "vec", "Vec"]],
         ) && cx.typeck_results().expr_ty_adjusted(root).is_slice()
         {
-            emit_lint(cx, GAZEBO_USE_TRY_MAP, expr.span);
+            emit_lint(cx, GAZEBO_LINT_USE_TRY_MAP, expr.span);
         }
     }
 }
@@ -214,7 +218,7 @@ fn check_use_into_map(cx: &LateContext, expr: &Expr) {
             &[],
         )
     {
-        emit_lint(cx, GAZEBO_USE_INTO_MAP, expr.span);
+        emit_lint(cx, GAZEBO_LINT_USE_INTO_MAP, expr.span);
     }
 }
 
@@ -236,7 +240,7 @@ fn check_use_into_try_map(cx: &LateContext, expr: &Expr) {
             &[],
         )
     {
-        emit_lint(cx, GAZEBO_USE_INTO_TRY_MAP, expr.span);
+        emit_lint(cx, GAZEBO_LINT_USE_INTO_TRY_MAP, expr.span);
     }
 }
 
@@ -271,7 +275,7 @@ fn check_use_dupe(cx: &LateContext, expr: &Expr) {
                 let mut cloned_type = cx.typeck_results().expr_ty(&args[0]).peel_refs();
                 loop {
                     if clippy::implements_trait(cx, cloned_type, dupe_trait, &[]) {
-                        emit_lint(cx, GAZEBO_USE_DUPE, method_span);
+                        emit_lint(cx, GAZEBO_LINT_USE_DUPE, method_span);
                     }
 
                     // Note that Dupe can work on references, that is calling `clone` on `&Foo`
@@ -299,7 +303,7 @@ fn check_use_duped(cx: &LateContext, expr: &Expr) {
                 let mut cloned_type = cx.typeck_results().expr_ty(&args[0]);
                 loop {
                     if clippy::implements_trait(cx, cloned_type, iterator_trait, &[]) {
-                        emit_lint(cx, GAZEBO_USE_DUPED, method_span);
+                        emit_lint(cx, GAZEBO_LINT_USE_DUPED, method_span);
                     }
 
                     // Note that Dupe can work on references, that is calling `clone` on `&Foo`
@@ -334,7 +338,7 @@ fn check_dupe_on_copy(cx: &LateContext, expr: &Expr) {
                         if clippy::implements_trait(cx, duped_type, copy_marker, &[])
                             && clippy::implements_trait(cx, duped_type, dupe_trait, &[])
                         {
-                            emit_lint(cx, GAZEBO_DUPE_ON_COPY, method_span);
+                            emit_lint(cx, GAZEBO_LINT_DUPE_ON_COPY, method_span);
                         }
 
                         // Note that Dupe can work on references, that is calling `dupe` on `&Foo`
@@ -360,7 +364,7 @@ fn check_use_box(cx: &LateContext, expr: &Expr) {
                 let res = cx.qpath_res(qpath, call.hir_id);
                 if let Some(def_id) = res.opt_def_id() {
                     if clippy::match_def_path(cx, def_id, &["alloc", "boxed", "Box", "new"]) {
-                        emit_lint(cx, USE_BOX, expr.span);
+                        emit_lint(cx, GAZEBO_LINT_USE_BOX, expr.span);
                     }
                 }
             }
@@ -424,7 +428,7 @@ fn check_impl_dupe(cx: &LateContext, item: &Item) {
             }
 
             if is_copy(cx, self_tys) || is_cheap(cx, self_tys, dupe_trait) {
-                emit_lint(cx, GAZEBO_IMPL_DUPE, item.span);
+                emit_lint(cx, GAZEBO_LINT_IMPL_DUPE, item.span);
             }
         }
     }
@@ -451,7 +455,7 @@ fn check_use_bail_and_ensure(cx: &LateContext, expr: &Expr) {
                             .map_or(false, |x| x == res)
                             && path.segments[2].ident.as_str() == "Err"
                         {
-                            emit_lint(cx, ANYHOW_AVOID_BAIL_AND_ENSURE, expr.span);
+                            emit_lint(cx, GAZEBO_LINT_ANYHOW_AVOID_BAIL_AND_ENSURE, expr.span);
                         }
                     }
                 }
@@ -468,19 +472,19 @@ fn check_qualify_anyhow(cx: &LateContext, item: &Item) {
                 UseKind::Glob => {
                     if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow"]) {
                         if anyhow_path == res {
-                            emit_lint(cx, ANYHOW_QUALIFY, item.span)
+                            emit_lint(cx, GAZEBO_LINT_ANYHOW_QUALIFY, item.span)
                         }
                     }
                 }
                 UseKind::Single => {
                     if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Result"]) {
                         if anyhow_path == res {
-                            emit_lint(cx, ANYHOW_QUALIFY, item.span)
+                            emit_lint(cx, GAZEBO_LINT_ANYHOW_QUALIFY, item.span)
                         }
                     }
                     if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Error"]) {
                         if anyhow_path == res {
-                            emit_lint(cx, ANYHOW_QUALIFY, item.span)
+                            emit_lint(cx, GAZEBO_LINT_ANYHOW_QUALIFY, item.span)
                         }
                     }
                 }
@@ -506,7 +510,7 @@ fn check_anyhow_two_arguments(cx: &LateContext, ty: &Ty) {
     )) = &ty.kind
     {
         if clippy::match_def_path(cx, *result, &["anyhow", "Result"]) {
-            emit_lint(cx, ANYHOW_RESULT_TWO_ARGUMENTS, ty.span);
+            emit_lint(cx, GAZEBO_LINT_ANYHOW_RESULT_TWO_ARGUMENTS, ty.span);
         }
     }
 }
@@ -517,8 +521,8 @@ impl<'tcx> LateLintPass<'tcx> for Pass {
         check_use_try_map(cx, expr);
         check_use_into_map(cx, expr);
         check_use_into_try_map(cx, expr);
-        check_use_slice_cloned_kind(cx, expr, sym!(cloned), GAZEBO_USE_SLICE_CLONED);
-        check_use_slice_cloned_kind(cx, expr, sym!(duped), GAZEBO_USE_SLICE_DUPED);
+        check_use_slice_cloned_kind(cx, expr, sym!(cloned), GAZEBO_LINT_USE_SLICE_CLONED);
+        check_use_slice_cloned_kind(cx, expr, sym!(duped), GAZEBO_LINT_USE_SLICE_DUPED);
         check_use_dupe(cx, expr);
         check_use_duped(cx, expr);
         check_dupe_on_copy(cx, expr);
@@ -543,20 +547,20 @@ fn __rustc_plugin_registrar(reg: &mut Registry) {
 
 fn register_plugin(reg: &mut Registry) {
     let lints = [
-        GAZEBO_USE_MAP,
-        GAZEBO_USE_TRY_MAP,
-        GAZEBO_USE_INTO_MAP,
-        GAZEBO_USE_INTO_TRY_MAP,
-        GAZEBO_USE_SLICE_CLONED,
-        GAZEBO_USE_SLICE_DUPED,
-        ANYHOW_AVOID_BAIL_AND_ENSURE,
-        USE_BOX,
-        GAZEBO_USE_DUPE,
-        GAZEBO_USE_DUPED,
-        GAZEBO_IMPL_DUPE,
-        ANYHOW_QUALIFY,
-        GAZEBO_DUPE_ON_COPY,
-        ANYHOW_RESULT_TWO_ARGUMENTS,
+        GAZEBO_LINT_USE_MAP,
+        GAZEBO_LINT_USE_TRY_MAP,
+        GAZEBO_LINT_USE_INTO_MAP,
+        GAZEBO_LINT_USE_INTO_TRY_MAP,
+        GAZEBO_LINT_USE_SLICE_CLONED,
+        GAZEBO_LINT_USE_SLICE_DUPED,
+        GAZEBO_LINT_ANYHOW_AVOID_BAIL_AND_ENSURE,
+        GAZEBO_LINT_USE_BOX,
+        GAZEBO_LINT_USE_DUPE,
+        GAZEBO_LINT_USE_DUPED,
+        GAZEBO_LINT_IMPL_DUPE,
+        GAZEBO_LINT_ANYHOW_QUALIFY,
+        GAZEBO_LINT_DUPE_ON_COPY,
+        GAZEBO_LINT_ANYHOW_RESULT_TWO_ARGUMENTS,
     ];
 
     reg.lint_store.register_lints(&lints);

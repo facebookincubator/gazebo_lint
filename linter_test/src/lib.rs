@@ -17,8 +17,9 @@
 #![plugin(gazebo_lint)]
 #![allow(unused)] // Unused because these are gazebo_lint test cases with no actual use
 
-use gazebo::prelude::*;
 use std::{collections::HashSet, sync::Arc};
+
+use gazebo::prelude::*;
 
 /////////////////////////////////////////////////////////////////////
 // UTILITY TYPES
@@ -45,7 +46,7 @@ pub fn test_map_no() {
     let _ = x.iter().map(|x| Some(&x[1..])).collect::<Vec<_>>();
 
     // We can ignore the hint
-    #[allow(gazebo_use_map)]
+    #[allow(gazebo_lint_use_map)]
     let _ = ["test"].iter().map(|x| &x[1..]).collect::<Vec<_>>();
 }
 
@@ -65,7 +66,7 @@ pub fn test_try_map_no() {
         .collect::<Result<Vec<_>, _>>();
 
     // We can ignore the hint
-    #[allow(gazebo_use_try_map)]
+    #[allow(gazebo_lint_use_try_map)]
     let _ = ["test"]
         .iter()
         .map(|x| Ok::<_, ()>(&x[1..]))
@@ -78,7 +79,7 @@ pub fn test_map_into_no() {
     let _ = x.into_iter().map(|x| &x[1..]).collect::<Vec<_>>();
 
     // We can ignore the hint
-    #[allow(gazebo_use_into_map)]
+    #[allow(gazebo_lint_use_into_map)]
     let _ = vec!["test"]
         .into_iter()
         .map(|x| &x[1..])
@@ -94,7 +95,7 @@ pub fn test_map_into_try_no() {
         .collect::<Result<Vec<_>, _>>();
 
     // We can ignore the hint
-    #[allow(gazebo_use_into_try_map)]
+    #[allow(gazebo_lint_use_into_try_map)]
     let _ = vec!["test"]
         .into_iter()
         .map(|x| Ok::<_, ()>(&x[1..]))
@@ -112,7 +113,7 @@ pub fn test_use_slice_cloned_no() {
         .cloned()
         .collect::<Vec<_>>();
 
-    #[allow(gazebo_use_slice_cloned)]
+    #[allow(gazebo_lint_use_slice_cloned)]
     let _ = vec!["test".to_owned()].iter().cloned().collect::<Vec<_>>();
 }
 
@@ -122,7 +123,7 @@ pub fn test_use_slice_duped() {
     let _ = vec![X].iter().duped().collect::<HashSet<_>>();
     let _ = [X].iter().filter(|x| true).duped().collect::<Vec<_>>();
 
-    #[allow(gazebo_use_slice_duped)]
+    #[allow(gazebo_lint_use_slice_duped)]
     let _ = vec![X].iter().duped().collect::<Vec<_>>();
 }
 
@@ -132,19 +133,19 @@ pub fn test_dupe_no() {
     // Wrapper is Dupe only if the inner is Dupe
     let _ = Wrapper("test".to_owned()).clone();
     // We can ignore the hint
-    #[allow(gazebo_use_dupe)]
+    #[allow(gazebo_lint_use_dupe)]
     let _ = Arc::new("test").clone();
 }
 
 pub fn test_duped_no() {
     // String is not Dupe
     let _ = ["a".to_owned(), "b".to_owned()].iter().cloned();
-    #[allow(gazebo_use_duped)]
+    #[allow(gazebo_lint_use_duped)]
     let _ = [1, 2].iter().cloned();
 }
 
 pub fn test_box_no() {
-    #[allow(use_box)]
+    #[allow(gazebo_lint_use_box)]
     let _ = Box::new("test");
 }
 
@@ -152,12 +153,12 @@ pub fn dupe_on_copy_no() {
     #[derive(Dupe, Clone, Copy)]
     struct DupeAndCopy;
 
-    #[allow(gazebo_dupe_on_copy)]
+    #[allow(gazebo_lint_dupe_on_copy)]
     let x = DupeAndCopy.dupe();
 
     let x_ref = &x;
 
-    #[allow(gazebo_dupe_on_copy)]
+    #[allow(gazebo_lint_dupe_on_copy)]
     let _ = x_ref.dupe();
 
     #[derive(Dupe, Clone)]
@@ -176,17 +177,17 @@ trait CloneAndDupe: Clone + Dupe {}
 mod impl_dupe {
     use super::*;
 
-    #[allow(gazebo_impl_dupe)]
+    #[allow(gazebo_lint_impl_dupe)]
     #[derive(Clone)]
     struct Foo(usize);
 
-    #[allow(gazebo_impl_dupe)]
+    #[allow(gazebo_lint_impl_dupe)]
     #[derive(Clone)]
     struct Bar {
         x: usize,
     }
 
-    #[allow(gazebo_impl_dupe)]
+    #[allow(gazebo_lint_impl_dupe)]
     #[derive(Clone)]
     enum Enums {
         A(usize),
