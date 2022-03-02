@@ -222,3 +222,15 @@ pub fn unpack_non_local<T>(res: def::Res<T>) -> Option<def::Res<!>> {
         x => Some(x.expect_non_local()),
     }
 }
+
+pub fn ty_from_hir_ty<'tcx>(cx: &LateContext<'tcx>, hir_ty: &rustc_hir::Ty<'_>) -> Ty<'tcx> {
+    cx.maybe_typeck_results()
+        .and_then(|results| {
+            if results.hir_owner == hir_ty.hir_id.owner {
+                results.node_type_opt(hir_ty.hir_id)
+            } else {
+                None
+            }
+        })
+        .unwrap_or_else(|| hir_ty_to_ty(cx.tcx, hir_ty))
+}

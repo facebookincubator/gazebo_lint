@@ -382,3 +382,7 @@ fn uses_ensure() -> anyhow::Result<()> {
 fn use_direct_result() -> anyhow::Result<(), ()> {
     Ok(())
 }
+
+fn use_arc_dupe() -> Arc<Arc<String>> {
+    Arc::new(Arc::new("test".to_owned()))
+}

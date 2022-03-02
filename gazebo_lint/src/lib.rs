@@ -54,10 +54,10 @@ use rustc_driver::plugin::Registry;
 use rustc_hir::{
     def::{DefKind, Res},
     def_id::DefId,
-    Expr, ExprKind, GenericArgs, Item, ItemKind, Path, PathSegment, QPath, Ty, UseKind,
+    Expr, ExprKind, GenericArg, GenericArgs, Item, ItemKind, Path, PathSegment, QPath, Ty, UseKind,
 };
 use rustc_lint::{LateContext, LateLintPass, Lint, LintContext, LintId};
-use rustc_middle::ty::TyKind;
+use rustc_middle::ty::{fold::TypeFoldable, TyKind};
 use rustc_span::{Span, Symbol};
 
 use crate::clippy::unpack_non_local;
@@ -142,6 +142,18 @@ declare_lint!(
     "use `Result` when there are two type arguments, instead of `anyhow::Result`."
 );
 
+declare_lint!(
+    GAZEBO_LINT_ARC_ON_DUPE,
+    Warn,
+    "an `Arc` is wrapping a type which is `Dupe`, is the `Arc` necessary?"
+);
+
+declare_lint!(
+    GAZEBO_LINT_RC_ON_DUPE,
+    Warn,
+    "an `Rc` is wrapping a type which is `Dupe`, is the `Rc` necessary?."
+);
+
 declare_lint_pass!(
     Pass => [
         GAZEBO_LINT_USE_MAP,
@@ -157,6 +169,8 @@ declare_lint_pass!(
         GAZEBO_LINT_ANYHOW_QUALIFY,
         GAZEBO_LINT_DUPE_ON_COPY,
         GAZEBO_LINT_ANYHOW_RESULT_TWO_ARGUMENTS,
+        GAZEBO_LINT_ARC_ON_DUPE,
+        GAZEBO_LINT_RC_ON_DUPE,
     ]
 );
 
@@ -515,6 +529,46 @@ fn check_anyhow_two_arguments(cx: &LateContext, ty: &Ty) {
     }
 }
 
+/// Look for `Arc<T>` where `T` is `Dupe`.
+fn check_arc_dupe(cx: &LateContext, ty: &Ty) {
+    if let rustc_hir::TyKind::Path(QPath::Resolved(
+        _,
+        Path {
+            res: Res::Def(DefKind::Struct, result),
+            segments:
+                [PathSegment {
+                    args:
+                        Some(GenericArgs {
+                            args: [GenericArg::Type(inner)],
+                            ..
+                        }),
+                    ..
+                }],
+            ..
+        },
+    )) = &ty.kind
+    {
+        let lint_name = if clippy::match_def_path(cx, *result, &["alloc", "sync", "Arc"]) {
+            GAZEBO_LINT_ARC_ON_DUPE
+        } else if clippy::match_def_path(cx, *result, &["alloc", "rc", "Rc"]) {
+            GAZEBO_LINT_RC_ON_DUPE
+        } else {
+            return;
+        };
+
+        if let Some(dupe_trait) = clippy::get_trait_def_id(cx, &["gazebo", "dupe", "Dupe"]) {
+            let inner = clippy::ty_from_hir_ty(cx, inner);
+            if inner.has_escaping_bound_vars() {
+                // Otherwise we get a panic in implements_trait
+                return;
+            }
+            if clippy::implements_trait(cx, inner, dupe_trait, &[]) {
+                emit_lint(cx, lint_name, ty.span);
+            }
+        }
+    }
+}
+
 impl<'tcx> LateLintPass<'tcx> for Pass {
     fn check_expr(&mut self, cx: &LateContext<'tcx>, expr: &'tcx Expr<'_>) {
         check_use_map(cx, expr);
@@ -537,6 +591,7 @@ impl<'tcx> LateLintPass<'tcx> for Pass {
 
     fn check_ty(&mut self, cx: &LateContext<'tcx>, item: &'tcx Ty<'tcx>) {
         check_anyhow_two_arguments(cx, item);
+        check_arc_dupe(cx, item);
     }
 }
 
@@ -561,6 +616,8 @@ fn register_plugin(reg: &mut Registry) {
         GAZEBO_LINT_ANYHOW_QUALIFY,
         GAZEBO_LINT_DUPE_ON_COPY,
         GAZEBO_LINT_ANYHOW_RESULT_TWO_ARGUMENTS,
+        GAZEBO_LINT_ARC_ON_DUPE,
+        GAZEBO_LINT_RC_ON_DUPE,
     ];
 
     reg.lint_store.register_lints(&lints);
