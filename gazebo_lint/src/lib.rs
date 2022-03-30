@@ -515,10 +515,13 @@ fn check_anyhow_two_arguments(cx: &LateContext, ty: &Ty) {
         Path {
             res: Res::Def(DefKind::TyAlias, result),
             segments:
-                [_, PathSegment {
-                    args: Some(GenericArgs { args: [_, _], .. }),
-                    ..
-                }],
+                [
+                    _,
+                    PathSegment {
+                        args: Some(GenericArgs { args: [_, _], .. }),
+                        ..
+                    },
+                ],
             ..
         },
     )) = &ty.kind
@@ -536,14 +539,16 @@ fn check_arc_dupe(cx: &LateContext, ty: &Ty) {
         Path {
             res: Res::Def(DefKind::Struct, result),
             segments:
-                [PathSegment {
-                    args:
-                        Some(GenericArgs {
-                            args: [GenericArg::Type(inner)],
-                            ..
-                        }),
-                    ..
-                }],
+                [
+                    PathSegment {
+                        args:
+                            Some(GenericArgs {
+                                args: [GenericArg::Type(inner)],
+                                ..
+                            }),
+                        ..
+                    },
+                ],
             ..
         },
     )) = &ty.kind
