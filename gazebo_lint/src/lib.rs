@@ -32,6 +32,7 @@
 
 // The rustc pieces we rely on.
 extern crate rustc_driver;
+extern crate rustc_errors;
 extern crate rustc_hir;
 extern crate rustc_infer;
 extern crate rustc_lint;
@@ -51,6 +52,7 @@ mod clippy;
 // rarely.
 
 use rustc_driver::plugin::Registry;
+use rustc_errors::Applicability;
 use rustc_hir::{
     def::{DefKind, Res},
     def_id::DefId,
@@ -178,6 +180,21 @@ fn emit_lint(cx: &LateContext, lint: &'static Lint, span: Span) {
     cx.lint(lint, |l| l.build(lint.desc).set_span(span).emit());
 }
 
+fn emit_suggestion(
+    cx: &LateContext,
+    lint: &'static Lint,
+    span: Span,
+    suggestion: String,
+    applicability: Applicability,
+) {
+    cx.lint(lint, |l| {
+        l.build(lint.desc)
+            .set_span(span)
+            .span_suggestion_short(span, lint.desc, suggestion, applicability)
+            .emit()
+    });
+}
+
 /// Look for `x.iter().map(f).collect()`
 /// Where the type of `x` is a slice, and the type of the result is a `Vec`.
 fn check_use_map(cx: &LateContext, expr: &Expr) {
@@ -289,7 +306,13 @@ fn check_use_dupe(cx: &LateContext, expr: &Expr) {
                 let mut cloned_type = cx.typeck_results().expr_ty(&args[0]).peel_refs();
                 loop {
                     if clippy::implements_trait(cx, cloned_type, dupe_trait, &[]) {
-                        emit_lint(cx, GAZEBO_LINT_USE_DUPE, method_span);
+                        emit_suggestion(
+                            cx,
+                            GAZEBO_LINT_USE_DUPE,
+                            method_span,
+                            "dupe".to_owned(),
+                            Applicability::MachineApplicable,
+                        );
                     }
 
                     // Note that Dupe can work on references, that is calling `clone` on `&Foo`
@@ -317,7 +340,13 @@ fn check_use_duped(cx: &LateContext, expr: &Expr) {
                 let mut cloned_type = cx.typeck_results().expr_ty(&args[0]);
                 loop {
                     if clippy::implements_trait(cx, cloned_type, iterator_trait, &[]) {
-                        emit_lint(cx, GAZEBO_LINT_USE_DUPED, method_span);
+                        emit_suggestion(
+                            cx,
+                            GAZEBO_LINT_USE_DUPED,
+                            method_span,
+                            "duped".to_owned(),
+                            Applicability::MachineApplicable,
+                        );
                     }
 
                     // Note that Dupe can work on references, that is calling `clone` on `&Foo`
