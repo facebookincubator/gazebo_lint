@@ -90,7 +90,7 @@ pub fn path_to_res(cx: &LateContext, path: &[&str]) -> PathToRes {
             return Some(Res::Def(DefKind::Mod, krate));
         }
 
-        let mut items = cx.tcx.item_children(krate);
+        let mut items = cx.tcx.module_children(krate);
         let mut path_it = path.iter().skip(1).peekable();
 
         loop {
@@ -106,7 +106,7 @@ pub fn path_to_res(cx: &LateContext, path: &[&str]) -> PathToRes {
                         return Some(item.res);
                     }
 
-                    items = cx.tcx.item_children(item.res.def_id());
+                    items = cx.tcx.module_children(item.res.def_id());
                     break;
                 }
             }
