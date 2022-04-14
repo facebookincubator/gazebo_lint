@@ -22,7 +22,7 @@ use rustc_infer::infer::TyCtxtInferExt;
 use rustc_lint::LateContext;
 use rustc_middle::{
     traits,
-    ty::{subst::GenericArg, Ty, TyKind, TyS},
+    ty::{subst::GenericArg, Ty, TyKind},
 };
 use rustc_span::{self, symbol::Symbol, Span};
 use rustc_trait_selection::traits::{
@@ -188,12 +188,7 @@ pub fn match_def_path(cx: &LateContext, did: DefId, syms: &[&str]) -> bool {
 }
 
 /// Matches the given `ty` with generics to the given types and generic types
-pub fn match_ty_path(
-    cx: &LateContext,
-    ty: &TyS,
-    ty_path: &[&str],
-    generic_tys: &[&[&str]],
-) -> bool {
+pub fn match_ty_path(cx: &LateContext, ty: Ty, ty_path: &[&str], generic_tys: &[&[&str]]) -> bool {
     if let TyKind::Adt(ty, subst) = ty.kind() {
         if match_def_path(cx, ty.did, ty_path) {
             let mut i = 0;

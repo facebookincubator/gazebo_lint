@@ -319,7 +319,7 @@ fn check_use_dupe(cx: &LateContext, expr: &Expr) {
                     // could also be a valid `dupe` call. So, try de-referencing the type once and
                     // check for `Dupe` on `Foo` as well.
                     if let TyKind::Ref(_, inner_ty, _) = cloned_type.kind() {
-                        cloned_type = inner_ty;
+                        cloned_type = *inner_ty;
                     } else {
                         break;
                     }
@@ -353,7 +353,7 @@ fn check_use_duped(cx: &LateContext, expr: &Expr) {
                     // could also be a valid `dupe` call. So, try de-referencing the type once and
                     // check for `Dupe` on `Foo` as well.
                     if let TyKind::Ref(_, inner_ty, _) = cloned_type.kind() {
-                        cloned_type = inner_ty;
+                        cloned_type = *inner_ty;
                     } else {
                         break;
                     }
@@ -388,7 +388,7 @@ fn check_dupe_on_copy(cx: &LateContext, expr: &Expr) {
                         // could also be a valid `dupe` call. So, try de-referencing the type once
                         // and check for `Copy` on `Foo` as well.
                         if let TyKind::Ref(_, inner_ty, _) = duped_type.kind() {
-                            duped_type = inner_ty;
+                            duped_type = *inner_ty;
                         } else {
                             break;
                         }
