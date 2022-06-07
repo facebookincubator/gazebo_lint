@@ -190,11 +190,11 @@ pub fn match_def_path(cx: &LateContext, did: DefId, syms: &[&str]) -> bool {
 /// Matches the given `ty` with generics to the given types and generic types
 pub fn match_ty_path(cx: &LateContext, ty: Ty, ty_path: &[&str], generic_tys: &[&[&str]]) -> bool {
     if let TyKind::Adt(ty, subst) = ty.kind() {
-        if match_def_path(cx, ty.did, ty_path) {
+        if match_def_path(cx, ty.did(), ty_path) {
             let mut i = 0;
             while i < generic_tys.len() {
                 if let Some(ty_param) = subst.type_at(i).ty_adt_def() {
-                    if !match_def_path(cx, ty_param.did, generic_tys[i]) {
+                    if !match_def_path(cx, ty_param.did(), generic_tys[i]) {
                         return false;
                     } else {
                         i += 1;
