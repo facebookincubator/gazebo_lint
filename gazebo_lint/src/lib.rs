@@ -428,7 +428,7 @@ fn check_impl_dupe(cx: &LateContext, item: &Item) {
     ) -> bool {
         match self_tys.kind() {
             TyKind::Adt(self_adt, sub) => {
-                for variant in self_adt.variants() {
+                for variant in self_adt.variants.iter() {
                     let mut fields = variant.fields.iter();
                     if let Some(field) = fields.next() {
                         if fields.next().is_some() {
