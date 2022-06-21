@@ -12,22 +12,28 @@
 
 use std::mem;
 
-use rustc_hir::{
-    self, def,
-    def::{DefKind, Res},
-    def_id::{DefId, CRATE_DEF_INDEX},
-    Expr, ExprKind, Impl, Item, ItemKind,
-};
+use rustc_hir::def;
+use rustc_hir::def::DefKind;
+use rustc_hir::def::Res;
+use rustc_hir::def_id::DefId;
+use rustc_hir::def_id::CRATE_DEF_INDEX;
+use rustc_hir::Expr;
+use rustc_hir::ExprKind;
+use rustc_hir::Impl;
+use rustc_hir::Item;
+use rustc_hir::ItemKind;
+use rustc_hir::{self};
 use rustc_infer::infer::TyCtxtInferExt;
 use rustc_lint::LateContext;
-use rustc_middle::{
-    traits,
-    ty::{subst::GenericArg, Ty, TyKind},
-};
-use rustc_span::{self, symbol::Symbol, Span};
-use rustc_trait_selection::traits::{
-    predicate_for_trait_def, query::evaluate_obligation::InferCtxtExt,
-};
+use rustc_middle::traits;
+use rustc_middle::ty::subst::GenericArg;
+use rustc_middle::ty::Ty;
+use rustc_middle::ty::TyKind;
+use rustc_span::symbol::Symbol;
+use rustc_span::Span;
+use rustc_span::{self};
+use rustc_trait_selection::traits::predicate_for_trait_def;
+use rustc_trait_selection::traits::query::evaluate_obligation::InferCtxtExt;
 use rustc_typeck::hir_ty_to_ty;
 use smallvec::SmallVec;
 

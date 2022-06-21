@@ -53,14 +53,29 @@ mod clippy;
 
 use rustc_driver::plugin::Registry;
 use rustc_errors::Applicability;
-use rustc_hir::{
-    def::{DefKind, Res},
-    def_id::DefId,
-    Expr, ExprKind, GenericArg, GenericArgs, Item, ItemKind, Path, PathSegment, QPath, Ty, UseKind,
-};
-use rustc_lint::{LateContext, LateLintPass, Lint, LintContext, LintId};
-use rustc_middle::ty::{fold::TypeFoldable, TyKind};
-use rustc_span::{Span, Symbol};
+use rustc_hir::def::DefKind;
+use rustc_hir::def::Res;
+use rustc_hir::def_id::DefId;
+use rustc_hir::Expr;
+use rustc_hir::ExprKind;
+use rustc_hir::GenericArg;
+use rustc_hir::GenericArgs;
+use rustc_hir::Item;
+use rustc_hir::ItemKind;
+use rustc_hir::Path;
+use rustc_hir::PathSegment;
+use rustc_hir::QPath;
+use rustc_hir::Ty;
+use rustc_hir::UseKind;
+use rustc_lint::LateContext;
+use rustc_lint::LateLintPass;
+use rustc_lint::Lint;
+use rustc_lint::LintContext;
+use rustc_lint::LintId;
+use rustc_middle::ty::fold::TypeFoldable;
+use rustc_middle::ty::TyKind;
+use rustc_span::Span;
+use rustc_span::Symbol;
 
 use crate::clippy::unpack_non_local;
 
