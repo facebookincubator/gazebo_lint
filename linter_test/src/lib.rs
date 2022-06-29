@@ -17,7 +17,8 @@
 #![plugin(gazebo_lint)]
 #![allow(unused)] // Unused because these are gazebo_lint test cases with no actual use
 
-use std::{collections::HashSet, sync::Arc};
+use std::collections::HashSet;
+use std::sync::Arc;
 
 use gazebo::prelude::*;
 
@@ -362,7 +363,9 @@ mod impl_dupe_warm {
 }
 
 mod should_warn {
-    use anyhow::{Error, Result, *};
+    use anyhow::Error;
+    use anyhow::Result;
+    use anyhow::*;
 }
 
 fn uses_bail() -> anyhow::Result<()> {
