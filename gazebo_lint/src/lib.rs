@@ -72,7 +72,10 @@ use rustc_lint::LateLintPass;
 use rustc_lint::Lint;
 use rustc_lint::LintContext;
 use rustc_lint::LintId;
+#[rustversion::before(1.64)]
 use rustc_middle::ty::fold::TypeFoldable;
+#[rustversion::since(1.64)]
+use rustc_middle::ty::visit::TypeVisitable;
 use rustc_middle::ty::TyKind;
 use rustc_span::Span;
 use rustc_span::Symbol;

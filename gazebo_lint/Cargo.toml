@@ -11,4 +11,5 @@ repository = "https://github.com/facebookincubator/gazebo_lint"
 plugin = true
 
 [dependencies]
+rustversion = "1.0"
 smallvec = "1.4"
