@@ -59,11 +59,11 @@ pub fn method_calls<'tcx>(
 
     let mut current = expr;
     for _ in 0..max_depth {
-        if let ExprKind::MethodCall(path, args, _) = &current.kind {
+        if let ExprKind::MethodCall(path, receiver, args, _) = &current.kind {
             method_names.push(path.ident.name);
             arg_lists.push(&**args);
             spans.push(path.ident.span);
-            current = &args[0];
+            current = receiver;
             if current.span.from_expansion() {
                 break;
             }

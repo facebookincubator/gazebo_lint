@@ -318,10 +318,10 @@ fn check_use_slice_cloned_kind(
 /// Look for `x.clone()`
 /// Where the type of `x` implements `Dupe`.
 fn check_use_dupe(cx: &LateContext, expr: &Expr) {
-    if let ExprKind::MethodCall(method_call, args, _) = expr.kind {
-        if args.len() == 1 && method_call.ident.name == sym!(clone) {
+    if let ExprKind::MethodCall(method_call, receiver, args, _) = expr.kind {
+        if args.is_empty() && method_call.ident.name == sym!(clone) {
             if let Some(dupe_trait) = clippy::get_trait_def_id(cx, &["gazebo", "dupe", "Dupe"]) {
-                let mut cloned_type = cx.typeck_results().expr_ty(&args[0]).peel_refs();
+                let mut cloned_type = cx.typeck_results().expr_ty(receiver).peel_refs();
                 loop {
                     if clippy::implements_trait(cx, cloned_type, dupe_trait, &[]) {
                         emit_suggestion(
@@ -350,12 +350,12 @@ fn check_use_dupe(cx: &LateContext, expr: &Expr) {
 /// Look for `x.cloned()`
 /// Where the type of the `::Item` of `x` implements `Dupe`.
 fn check_use_duped(cx: &LateContext, expr: &Expr) {
-    if let ExprKind::MethodCall(method_call, args, _) = expr.kind {
-        if args.len() == 1 && method_call.ident.name == sym!(cloned) {
+    if let ExprKind::MethodCall(method_call, receiver, args, _) = expr.kind {
+        if args.is_empty() && method_call.ident.name == sym!(cloned) {
             if let Some(iterator_trait) =
                 clippy::get_trait_def_id(cx, &["gazebo", "ext", "iter", "IterDuped"])
             {
-                let mut cloned_type = cx.typeck_results().expr_ty(&args[0]);
+                let mut cloned_type = cx.typeck_results().expr_ty(receiver);
                 loop {
                     if clippy::implements_trait(cx, cloned_type, iterator_trait, &[]) {
                         emit_suggestion(
@@ -384,12 +384,12 @@ fn check_use_duped(cx: &LateContext, expr: &Expr) {
 /// Look for `x.dupe()`
 /// Where the type of `x` implements `Copy`.
 fn check_dupe_on_copy(cx: &LateContext, expr: &Expr) {
-    if let ExprKind::MethodCall(method_call, args, _) = expr.kind {
-        if args.len() == 1 && method_call.ident.name == sym!(dupe) {
+    if let ExprKind::MethodCall(method_call, receiver, args, _) = expr.kind {
+        if args.is_empty() && method_call.ident.name == sym!(dupe) {
             if let Some(dupe_trait) = clippy::get_trait_def_id(cx, &["gazebo", "dupe", "Dupe"]) {
                 if let Some(copy_marker) = clippy::get_trait_def_id(cx, &["std", "marker", "Copy"])
                 {
-                    let mut duped_type = cx.typeck_results().expr_ty(&args[0]).peel_refs();
+                    let mut duped_type = cx.typeck_results().expr_ty(receiver).peel_refs();
                     loop {
                         // Note that we could be calling `dupe` on a `&Foo`. All `&` types are
                         // `Copy`, so we actually need to make sure the current type we are looking
@@ -511,7 +511,7 @@ fn check_use_bail_and_ensure(cx: &LateContext, expr: &Expr) {
                 if clippy::path_to_res(cx, &["anyhow", "private", "Err"])
                     == clippy::path_to_res(cx, &["core", "result", "Result", "Err"])
                 {
-                    if let Some(res) = path.segments[1].res.and_then(unpack_non_local) {
+                    if let Some(res) = unpack_non_local(path.segments[1].res) {
                         if clippy::path_to_res(cx, &["anyhow", "private"])
                             .map_or(false, |x| x == res)
                             && path.segments[2].ident.as_str() == "Err"
@@ -673,7 +673,7 @@ fn register_plugin(reg: &mut Registry) {
     ];
 
     reg.lint_store.register_lints(&lints);
-    reg.lint_store.register_late_pass(|| box Pass);
+    reg.lint_store.register_late_pass(|_| box Pass);
     reg.lint_store.register_group(
         true,
         "gazebo",
