@@ -34,12 +34,12 @@
 extern crate rustc_driver;
 extern crate rustc_errors;
 extern crate rustc_hir;
+extern crate rustc_hir_analysis;
 extern crate rustc_infer;
 extern crate rustc_lint;
 extern crate rustc_middle;
 extern crate rustc_span;
 extern crate rustc_trait_selection;
-extern crate rustc_typeck;
 #[macro_use]
 extern crate rustc_session;
 
@@ -195,7 +195,7 @@ declare_lint_pass!(
 );
 
 fn emit_lint(cx: &LateContext, lint: &'static Lint, span: Span) {
-    cx.lint(lint, |l| l.build(lint.desc).set_span(span).emit());
+    cx.lint(lint, lint.desc, |l| l.set_span(span));
 }
 
 fn emit_suggestion(
@@ -205,11 +205,9 @@ fn emit_suggestion(
     suggestion: String,
     applicability: Applicability,
 ) {
-    cx.lint(lint, |l| {
-        l.build(lint.desc)
-            .set_span(span)
+    cx.lint(lint, lint.desc, |l| {
+        l.set_span(span)
             .span_suggestion_short(span, lint.desc, suggestion, applicability)
-            .emit()
     });
 }
 

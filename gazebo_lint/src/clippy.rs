@@ -22,6 +22,7 @@ use rustc_hir::ExprKind;
 use rustc_hir::Impl;
 use rustc_hir::Item;
 use rustc_hir::ItemKind;
+use rustc_hir_analysis::hir_ty_to_ty;
 use rustc_infer::infer::TyCtxtInferExt;
 use rustc_lint::LateContext;
 use rustc_middle::traits;
@@ -32,7 +33,6 @@ use rustc_span::symbol::Symbol;
 use rustc_span::Span;
 use rustc_trait_selection::traits::predicate_for_trait_def;
 use rustc_trait_selection::traits::query::evaluate_obligation::InferCtxtExt;
-use rustc_typeck::hir_ty_to_ty;
 use smallvec::SmallVec;
 
 macro_rules! sym {
@@ -140,7 +140,8 @@ pub fn implements_trait<'tcx>(
     );
     cx.tcx
         .infer_ctxt()
-        .enter(|infcx| infcx.predicate_must_hold_modulo_regions(&obligation))
+        .build()
+        .predicate_must_hold_modulo_regions(&obligation)
 }
 
 /// Checks whether this is the implementation of a specific trait, if so, return the type the trait
