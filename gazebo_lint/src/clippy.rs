@@ -124,18 +124,15 @@ pub fn path_to_res(cx: &LateContext, path: &[&str]) -> PathToRes {
 /// See also `get_trait_def_id`.
 pub fn implements_trait<'tcx>(
     cx: &LateContext<'tcx>,
-    ty: Ty<'tcx>,
     trait_id: DefId,
-    ty_params: &[GenericArg<'tcx>],
+    ty_params: impl IntoIterator<Item = impl Into<GenericArg<'tcx>>>,
 ) -> bool {
-    let ty = cx.tcx.erase_regions(ty);
     let obligation = predicate_for_trait_def(
         cx.tcx,
         cx.param_env,
         traits::ObligationCause::dummy(),
         trait_id,
         0,
-        ty,
         ty_params,
     );
     cx.tcx

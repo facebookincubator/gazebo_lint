@@ -321,7 +321,7 @@ fn check_use_dupe(cx: &LateContext, expr: &Expr) {
             if let Some(dupe_trait) = clippy::get_trait_def_id(cx, &["gazebo", "dupe", "Dupe"]) {
                 let mut cloned_type = cx.typeck_results().expr_ty(receiver).peel_refs();
                 loop {
-                    if clippy::implements_trait(cx, cloned_type, dupe_trait, &[]) {
+                    if clippy::implements_trait(cx, dupe_trait, [cloned_type]) {
                         emit_suggestion(
                             cx,
                             GAZEBO_LINT_USE_DUPE,
@@ -355,7 +355,7 @@ fn check_use_duped(cx: &LateContext, expr: &Expr) {
             {
                 let mut cloned_type = cx.typeck_results().expr_ty(receiver);
                 loop {
-                    if clippy::implements_trait(cx, cloned_type, iterator_trait, &[]) {
+                    if clippy::implements_trait(cx, iterator_trait, [cloned_type]) {
                         emit_suggestion(
                             cx,
                             GAZEBO_LINT_USE_DUPED,
@@ -394,8 +394,8 @@ fn check_dupe_on_copy(cx: &LateContext, expr: &Expr) {
                         // at is `Dupe` as well so we correctly determine a `Foo` that is both
                         // `Dupe` and `Copy`, rather than a false positive because all `&`s are
                         // `Copy`.
-                        if clippy::implements_trait(cx, duped_type, copy_marker, &[])
-                            && clippy::implements_trait(cx, duped_type, dupe_trait, &[])
+                        if clippy::implements_trait(cx, copy_marker, [duped_type])
+                            && clippy::implements_trait(cx, dupe_trait, [duped_type])
                         {
                             emit_lint(cx, GAZEBO_LINT_DUPE_ON_COPY, method_call.ident.span);
                         }
@@ -454,7 +454,11 @@ fn check_impl_dupe(cx: &LateContext, item: &Item) {
                         }
                         let field_ty = field.ty(cx.tcx, sub);
 
-                        if !clippy::implements_trait(cx, field_ty, dupe_trait, sub) {
+                        if !clippy::implements_trait(
+                            cx,
+                            dupe_trait,
+                            [field_ty.into()].into_iter().chain(sub.iter()),
+                        ) {
                             // the field isn't dupe, so the whole adt isn't
                             return false;
                         }
@@ -471,7 +475,7 @@ fn check_impl_dupe(cx: &LateContext, item: &Item) {
 
     fn is_copy<'tcx>(cx: &LateContext<'tcx>, self_tys: rustc_middle::ty::Ty<'tcx>) -> bool {
         if let Some(copy_trait) = clippy::get_trait_def_id(cx, &["core", "marker", "Copy"]) {
-            clippy::implements_trait(cx, self_tys, copy_trait, &[])
+            clippy::implements_trait(cx, copy_trait, [self_tys])
         } else {
             false
         }
@@ -481,7 +485,7 @@ fn check_impl_dupe(cx: &LateContext, item: &Item) {
         if let Some(self_tys) =
             clippy::is_implementation_of_trait(cx, item, &["core", "clone", "Clone"])
         {
-            if clippy::implements_trait(cx, self_tys, dupe_trait, &[]) {
+            if clippy::implements_trait(cx, dupe_trait, [self_tys]) {
                 // already dupe
                 return;
             }
@@ -526,29 +530,31 @@ fn check_use_bail_and_ensure(cx: &LateContext, expr: &Expr) {
 /// Look for use `anyhow::Result` or use `anyhow::Error`.
 fn check_qualify_anyhow(cx: &LateContext, item: &Item) {
     if let ItemKind::Use(path, kind) = &item.kind {
-        if let Some(res) = unpack_non_local(path.res) {
-            match kind {
-                UseKind::Glob => {
-                    if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow"]) {
-                        if anyhow_path == res {
-                            emit_lint(cx, GAZEBO_LINT_ANYHOW_QUALIFY, item.span)
+        for res in &path.res {
+            if let Some(res) = unpack_non_local(*res) {
+                match kind {
+                    UseKind::Glob => {
+                        if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow"]) {
+                            if anyhow_path == res {
+                                emit_lint(cx, GAZEBO_LINT_ANYHOW_QUALIFY, item.span)
+                            }
                         }
                     }
-                }
-                UseKind::Single => {
-                    if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Result"]) {
-                        if anyhow_path == res {
-                            emit_lint(cx, GAZEBO_LINT_ANYHOW_QUALIFY, item.span)
+                    UseKind::Single => {
+                        if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Result"]) {
+                            if anyhow_path == res {
+                                emit_lint(cx, GAZEBO_LINT_ANYHOW_QUALIFY, item.span)
+                            }
+                        }
+                        if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Error"]) {
+                            if anyhow_path == res {
+                                emit_lint(cx, GAZEBO_LINT_ANYHOW_QUALIFY, item.span)
+                            }
                         }
                     }
-                    if let Some(anyhow_path) = clippy::path_to_res(cx, &["anyhow", "Error"]) {
-                        if anyhow_path == res {
-                            emit_lint(cx, GAZEBO_LINT_ANYHOW_QUALIFY, item.span)
-                        }
-                    }
-                }
-                _ => {}
-            };
+                    _ => {}
+                };
+            }
         }
     }
 }
@@ -612,7 +618,7 @@ fn check_arc_dupe(cx: &LateContext, ty: &Ty) {
                 // Otherwise we get a panic in implements_trait
                 return;
             }
-            if clippy::implements_trait(cx, inner, dupe_trait, &[]) {
+            if clippy::implements_trait(cx, dupe_trait, [inner]) {
                 emit_lint(cx, lint_name, ty.span);
             }
         }
