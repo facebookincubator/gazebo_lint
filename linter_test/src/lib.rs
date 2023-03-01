@@ -145,11 +145,6 @@ pub fn test_duped_no() {
     let _ = [1, 2].iter().cloned();
 }
 
-pub fn test_box_no() {
-    #[allow(gazebo_lint_use_box)]
-    let _ = Box::new("test");
-}
-
 pub fn dupe_on_copy_no() {
     #[derive(Dupe, Clone, Copy)]
     struct DupeAndCopy;
@@ -316,13 +311,6 @@ pub fn dupe_on_copy() {
     let x_ref = &x;
 
     let _ = x_ref.dupe();
-}
-
-pub fn test_box() {
-    let _ = Box::new(1);
-    let _ = vec![Box::new(1)];
-    let f = |x| Box::new(x);
-    let _ = f(Box::new(1));
 }
 
 mod impl_dupe_warm {

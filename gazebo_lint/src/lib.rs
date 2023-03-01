@@ -138,12 +138,6 @@ declare_lint!(
 );
 
 declare_lint!(
-    GAZEBO_LINT_USE_BOX,
-    Warn,
-    "Use `box` syntax instead of `Box::new`"
-);
-
-declare_lint!(
     GAZEBO_LINT_IMPL_DUPE,
     Warn,
     "impl `Dupe` on types that impl `Clone` where possible, e.g. `struct Foo(SomethingDupe)`"
@@ -183,7 +177,6 @@ declare_lint_pass!(
         GAZEBO_LINT_USE_SLICE_CLONED,
         GAZEBO_LINT_USE_SLICE_DUPED,
         GAZEBO_LINT_ANYHOW_AVOID_BAIL_AND_ENSURE,
-        GAZEBO_LINT_USE_BOX,
         GAZEBO_LINT_USE_DUPE,
         GAZEBO_LINT_IMPL_DUPE,
         GAZEBO_LINT_ANYHOW_QUALIFY,
@@ -415,22 +408,6 @@ fn check_dupe_on_copy(cx: &LateContext, expr: &Expr) {
     }
 }
 
-/// Look for `Box::new`.
-fn check_use_box(cx: &LateContext, expr: &Expr) {
-    if let ExprKind::Call(call, args) = expr.kind {
-        if args.len() == 1 {
-            if let ExprKind::Path(qpath) = &call.kind {
-                let res = cx.qpath_res(qpath, call.hir_id);
-                if let Some(def_id) = res.opt_def_id() {
-                    if clippy::match_def_path(cx, def_id, &["alloc", "boxed", "Box", "new"]) {
-                        emit_lint(cx, GAZEBO_LINT_USE_BOX, expr.span);
-                    }
-                }
-            }
-        }
-    }
-}
-
 /// Look for traits implementing `Clone` but not `Dupe`, where `Dupe` is reasonable
 /// A type is reasonably `Dupe` if either of:
 ///
@@ -636,7 +613,6 @@ impl<'tcx> LateLintPass<'tcx> for Pass {
         check_use_dupe(cx, expr);
         check_use_duped(cx, expr);
         check_dupe_on_copy(cx, expr);
-        check_use_box(cx, expr);
         check_use_bail_and_ensure(cx, expr);
     }
 
@@ -665,7 +641,6 @@ fn register_plugin(reg: &mut Registry) {
         GAZEBO_LINT_USE_SLICE_CLONED,
         GAZEBO_LINT_USE_SLICE_DUPED,
         GAZEBO_LINT_ANYHOW_AVOID_BAIL_AND_ENSURE,
-        GAZEBO_LINT_USE_BOX,
         GAZEBO_LINT_USE_DUPE,
         GAZEBO_LINT_USE_DUPED,
         GAZEBO_LINT_IMPL_DUPE,
