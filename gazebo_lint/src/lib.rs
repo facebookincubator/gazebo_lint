@@ -28,7 +28,6 @@
 
 #![feature(rustc_private)]
 #![feature(never_type)]
-#![feature(box_syntax)]
 
 // The rustc pieces we rely on.
 extern crate rustc_driver;
@@ -652,7 +651,7 @@ fn register_plugin(reg: &mut Registry) {
     ];
 
     reg.lint_store.register_lints(&lints);
-    reg.lint_store.register_late_pass(|_| box Pass);
+    reg.lint_store.register_late_pass(|_| Box::new(Pass));
     reg.lint_store.register_group(
         true,
         "gazebo",
