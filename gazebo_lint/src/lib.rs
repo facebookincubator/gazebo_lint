@@ -73,9 +73,11 @@ use rustc_lint::LintContext;
 use rustc_lint::LintId;
 #[rustversion::before(1.64)]
 use rustc_middle::ty::fold::TypeFoldable;
-#[rustversion::since(1.64)]
+#[rustversion::all(since(1.64), before(1.69))]
 use rustc_middle::ty::visit::TypeVisitable;
 use rustc_middle::ty::TyKind;
+#[rustversion::since(1.69)]
+use rustc_middle::ty::TypeVisitableExt;
 use rustc_span::Span;
 use rustc_span::Symbol;
 
