@@ -27,13 +27,13 @@ use rustc_infer::infer::TyCtxtInferExt;
 use rustc_lint::LateContext;
 use rustc_middle::traits;
 use rustc_middle::ty::subst::GenericArg;
+use rustc_middle::ty::Binder;
+use rustc_middle::ty::ToPredicate;
 use rustc_middle::ty::Ty;
 use rustc_middle::ty::TyKind;
 use rustc_span::symbol::Symbol;
 use rustc_span::Span;
-use rustc_trait_selection::traits::predicate_for_trait_def;
 use rustc_trait_selection::traits::query::evaluate_obligation::InferCtxtExt;
-use smallvec::SmallVec;
 
 macro_rules! sym {
     ($tt:tt) => {
@@ -103,8 +103,7 @@ pub fn path_to_res(cx: &LateContext, path: &[&str]) -> PathToRes {
                 None => return None,
             };
 
-            let result = SmallVec::<[_; 8]>::new();
-            for item in mem::replace(&mut items, cx.tcx.arena.alloc_slice(&result)).iter() {
+            for item in mem::take(&mut items).iter() {
                 if item.ident.name.as_str() == *segment {
                     if path_it.peek().is_none() {
                         return Some(item.res);
@@ -127,14 +126,15 @@ pub fn implements_trait<'tcx>(
     trait_id: DefId,
     ty_params: impl IntoIterator<Item = impl Into<GenericArg<'tcx>>>,
 ) -> bool {
-    let obligation = predicate_for_trait_def(
-        cx.tcx,
-        cx.param_env,
-        traits::ObligationCause::dummy(),
-        trait_id,
-        0,
-        ty_params,
-    );
+    let trait_ref = cx.tcx.mk_trait_ref(trait_id, ty_params);
+    let obligation = rustc_trait_selection::traits::Obligation {
+        cause: traits::ObligationCause::dummy(),
+        param_env: cx.param_env,
+        recursion_depth: 0,
+        predicate: Binder::dummy(trait_ref)
+            .without_const()
+            .to_predicate(cx.tcx),
+    };
     cx.tcx
         .infer_ctxt()
         .build()
