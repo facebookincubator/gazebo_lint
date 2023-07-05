@@ -15,10 +15,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - uses: dtolnay/rust-toolchain@master
       with:
         toolchain: nightly-2022-02-24
-        override: true
         components: clippy, rustfmt, rust-src, rustc-dev, llvm-tools-preview
     - run: cargo fmt -- --check
     - run: cargo clippy ${{ matrix.flags }}
