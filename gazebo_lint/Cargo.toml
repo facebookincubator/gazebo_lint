@@ -1,11 +1,11 @@
 [package]
-name = "gazebo_lint"
-version = "0.1.1"
-edition = "2021"
-license = "MIT OR Apache-2.0"
 authors = ["Facebook"]
 description = "A linter for the Gazebo Rust library"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+name = "gazebo_lint"
 repository = "https://github.com/facebookincubator/gazebo_lint"
+version = "0.1.1"
 
 [lib]
 plugin = true
