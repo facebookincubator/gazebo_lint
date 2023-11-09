@@ -1,3 +1,13 @@
+# This project is archived
+
+gazebo-lint included lints aiming at:
+* make writing code easier for Rust newcomers
+* enforce certain code patterns in buck2 project
+* enforce recommended patterns using gazebo library
+
+This lint relies heavily on rust compiler internals, it is expensive to maintain,
+so we decided to archive it.
+
 # Gazebo Lint - a linter for patterns relating to the Gazebo Library
 
 [![GitHub link](https://img.shields.io/badge/GitHub-facebookincubator%2Fgazebo_lint-blue.svg)](https://github.com/facebookincubator/gazebo_lint)
